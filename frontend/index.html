@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plataforma de Gestión de Tareas</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      overflow: hidden;
+    }
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+    h1 { font-size: 2.5em; margin-bottom: 10px; }
+    .subtitle { opacity: 0.9; font-size: 1.1em; }
+    .tabs {
+      display: flex;
+      background: #f5f5f5;
+      border-bottom: 2px solid #ddd;
+    }
+    .tab {
+      flex: 1;
+      padding: 15px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      background: transparent;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    .tab:hover { background: #e0e0e0; }
+    .tab.active {
+      background: white;
+      border-bottom: 3px solid #667eea;
+      color: #667eea;
+    }
+    .content {
+      padding: 30px;
+      display: none;
+    }
+    .content.active { display: block; }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #333;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #ddd;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: border 0.3s;
+    }
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+    textarea { min-height: 100px; resize: vertical; }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-right: 10px;
+    }
+    button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    }
+    .btn-secondary {
+      background: #6c757d;
+    }
+    .btn-danger {
+      background: #dc3545;
+    }
+    .card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: translateX(5px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .card h3 { color: #667eea; margin-bottom: 10px; }
+    .card p { color: #666; margin: 5px 0; }
+    .card-actions {
+      margin-top: 10px;
+      display: flex;
+      gap: 10px;
+    }
+    .card-actions button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 1000;
+      max-width: 300px;
+    }
+    .notification.success { border-left: 4px solid #28a745; }
+    .notification.error { border-left: 4px solid #dc3545; }
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+    .empty-state h3 { font-size: 1.5em; margin-bottom: 10px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+  </style>
+</head>
+<body>
+  <div class="notification" id="notification"></div>
+  
+  <div class="container">
+    <header>
+      <h1>🚀 Plataforma de Gestión de Tareas</h1>
+      <p class="subtitle">Gestiona tareas, equipos y usuarios en un solo lugar</p>
+    </header>
+
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('tasks')">📋 Tareas</button>
+      <button class="tab" onclick="showTab('users')">👥 Usuarios</button>
+      <button class="tab" onclick="showTab('teams')">🏢 Equipos</button>
+      <button class="tab" onclick="showTab('notifications')">🔔 Notificaciones</button>
+    </div>
+
+    <!-- TAREAS -->
+    <div id="tasks" class="content active">
+      <h2>Gestión de Tareas</h2>
+      <div class="form-group">
+        <label>Título de la Tarea</label>
+        <input type="text" id="taskTitle" placeholder="Ej: Desarrollar nueva funcionalidad">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="taskDescription" placeholder="Describe la tarea en detalle..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="taskStatus">
+          <option value="pending">Pendiente</option>
+          <option value="in-progress">En Progreso</option>
+          <option value="completed">Completada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Asignar a Equipo (Opcional)</label>
+        <select id="taskTeam">
+          <option value="">Sin equipo</option>
+        </select>
+      </div>
+      <button onclick="createTask()">➕ Crear Tarea</button>
+      <button class="btn-secondary" onclick="loadTasks()">🔄 Actualizar Lista</button>
+      
+      <h3 style="margin-top: 30px;">Listado de Tareas</h3>
+      <div id="tasksList"></div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div id="users" class="content">
+      <h2>Gestión de Usuarios</h2>
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" id="userName" placeholder="Ej: Juan Pérez">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="userEmail" placeholder="juan@ejemplo.com">
+      </div>
+      <div class="form-group">
+        <label>Rol</label>
+        <select id="userRole">
+          <option value="developer">Desarrollador</option>
+          <option value="designer">Diseñador</option>
+          <option value="manager">Manager</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <button onclick="createUser()">➕ Crear Usuario</button>
+      <button class="btn-secondary" onclick="loadUsers()">🔄 Actualizar Lista</button>
+      
+      <h3 style="margin-top: 30px;">Listado de Usuarios</h3>
+      <div id="usersList" class="grid"></div>
+    </div>
+
+    <!-- EQUIPOS -->
+    <div id="teams" class="content">
+      <h2>Gestión de Equipos</h2>
+      <div class="form-group">
+        <label>Nombre del Equipo</label>
+        <input type="text" id="teamName" placeholder="Ej: Equipo Frontend">
+      </div>
+      <div class="form-group">
+        <label>Descripción</label>
+        <textarea id="teamDescription" placeholder="Describe el equipo..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Agregar Miembros (Opcional)</label>
+        <select id="teamMembers" multiple style="height: 120px;">
+          <option value="" disabled>Cargando usuarios...</option>
+        </select>
+        <small style="color: #666; display: block; margin-top: 5px;">Mantén presionado Ctrl (Cmd en Mac) para seleccionar múltiples usuarios</small>
+      </div>
+      <button onclick="createTeam()">➕ Crear Equipo</button>
+      <button class="btn-secondary" onclick="loadTeams()">🔄 Actualizar Lista</button>
+      
+      <h3 style="margin-top: 30px;">Listado de Equipos</h3>
+      <div id="teamsList"></div>
+    </div>
+
+    <!-- NOTIFICACIONES -->
+    <div id="notifications" class="content">
+      <h2>Centro de Notificaciones</h2>
+      <div class="form-group">
+        <label>Mensaje</label>
+        <input type="text" id="notificationMessage" placeholder="Ej: Nueva tarea asignada">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="notificationType">
+          <option value="info">Información</option>
+          <option value="success">Éxito</option>
+          <option value="warning">Advertencia</option>
+          <option value="error">Error</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Enviar a Equipo (Opcional)</label>
+        <select id="notificationTeam">
+          <option value="">Notificación general</option>
+        </select>
+      </div>
+      <button onclick="sendNotification()">📤 Enviar Notificación</button>
+      <button class="btn-secondary" onclick="loadNotifications()">🔄 Actualizar Lista</button>
+      
+      <h3 style="margin-top: 30px;">Historial de Notificaciones</h3>
+      <div id="notificationsList"></div>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:4000/api';
+
+    function showTab(tabName) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById(tabName).classList.add('active');
+      
+      if (tabName === 'tasks') {
+        loadTasks();
+        loadTeamsForSelect('taskTeam');
+      }
+      else if (tabName === 'users') loadUsers();
+      else if (tabName === 'teams') {
+        loadTeams();
+        loadUsersForTeamSelect();
+      }
+      else if (tabName === 'notifications') {
+        loadNotifications();
+        loadTeamsForSelect('notificationTeam');
+      }
+    }
+
+    async function loadTeamsForSelect(selectId) {
+      try {
+        const response = await fetch(`${API_URL}/teams`);
+        const teams = await response.json();
+        const select = document.getElementById(selectId);
+        
+        // Mantener la primera opción (Sin equipo / Notificación general)
+        const firstOption = select.options[0].outerHTML;
+        
+        select.innerHTML = firstOption + teams.map(team => 
+          `<option value="${team.id}">${team.name}</option>`
+        ).join('');
+      } catch (error) {
+        console.error('Error al cargar equipos:', error);
+      }
+    }
+
+    function showNotification(message, type = 'success') {
+      const notif = document.getElementById('notification');
+      notif.textContent = message;
+      notif.className = `notification ${type}`;
+      notif.style.display = 'block';
+      setTimeout(() => notif.style.display = 'none', 3000);
+    }
+
+    // TAREAS
+    async function createTask() {
+      const title = document.getElementById('taskTitle').value;
+      const description = document.getElementById('taskDescription').value;
+      const status = document.getElementById('taskStatus').value;
+      const teamId = document.getElementById('taskTeam').value;
+      
+      if (!title) return showNotification('El título es requerido', 'error');
+
+      try {
+        const taskData = { title, description, status };
+        if (teamId) taskData.teamId = teamId;
+        
+        const response = await fetch(`${API_URL}/tasks`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(taskData)
+        });
+        
+        if (response.ok) {
+          showNotification('Tarea creada exitosamente');
+          document.getElementById('taskTitle').value = '';
+          document.getElementById('taskDescription').value = '';
+          document.getElementById('taskTeam').selectedIndex = 0;
+          loadTasks();
+        }
+      } catch (error) {
+        showNotification('Error al crear tarea: ' + error.message, 'error');
+      }
+    }
+
+    async function loadTasks() {
+      try {
+        const response = await fetch(`${API_URL}/tasks`);
+        const tasks = await response.json();
+        const container = document.getElementById('tasksList');
+        
+        if (tasks.length === 0) {
+          container.innerHTML = '<div class="empty-state"><h3>📭 No hay tareas</h3><p>Crea tu primera tarea para comenzar</p></div>';
+          return;
+        }
+
+        container.innerHTML = tasks.map(task => `
+          <div class="card">
+            <h3>${task.title || 'Sin título'}</h3>
+            <p><strong>Descripción:</strong> ${task.description || 'Sin descripción'}</p>
+            <p><strong>Estado:</strong> <span style="color: ${task.status === 'completed' ? 'green' : task.status === 'in-progress' ? 'orange' : 'gray'}">${task.status || 'pending'}</span></p>
+            ${task.teamName ? `<p><strong>Equipo:</strong> 🏢 ${task.teamName}</p>` : ''}
+            <p><strong>ID:</strong> ${task.id}</p>
+            <div class="card-actions">
+              <button class="btn-danger" onclick="deleteTask('${task.id}')">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showNotification('Error al cargar tareas: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteTask(id) {
+      if (!confirm('¿Seguro que deseas eliminar esta tarea?')) return;
+      
+      try {
+        await fetch(`${API_URL}/tasks/${id}`, { method: 'DELETE' });
+        showNotification('Tarea eliminada');
+        loadTasks();
+      } catch (error) {
+        showNotification('Error al eliminar tarea: ' + error.message, 'error');
+      }
+    }
+
+    // USUARIOS
+    async function createUser() {
+      const name = document.getElementById('userName').value;
+      const email = document.getElementById('userEmail').value;
+      const role = document.getElementById('userRole').value;
+      
+      if (!name || !email) return showNotification('Nombre y email son requeridos', 'error');
+
+      try {
+        const response = await fetch(`${API_URL}/users`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, role })
+        });
+        
+        if (response.ok) {
+          showNotification('Usuario creado exitosamente');
+          document.getElementById('userName').value = '';
+          document.getElementById('userEmail').value = '';
+          loadUsers();
+        }
+      } catch (error) {
+        showNotification('Error al crear usuario: ' + error.message, 'error');
+      }
+    }
+
+    async function loadUsers() {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        const users = await response.json();
+        const container = document.getElementById('usersList');
+        
+        if (users.length === 0) {
+          container.innerHTML = '<div class="empty-state"><h3>👥 No hay usuarios</h3><p>Registra el primer usuario</p></div>';
+          return;
+        }
+
+        container.innerHTML = users.map(user => `
+          <div class="card">
+            <h3>${user.name || 'Sin nombre'}</h3>
+            <p><strong>Email:</strong> ${user.email || 'Sin email'}</p>
+            <p><strong>Rol:</strong> ${user.role || 'Sin rol'}</p>
+            <p><strong>ID:</strong> ${user.id}</p>
+            <div class="card-actions">
+              <button class="btn-danger" onclick="deleteUser('${user.id}')">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showNotification('Error al cargar usuarios: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteUser(id) {
+      if (!confirm('¿Seguro que deseas eliminar este usuario?')) return;
+      
+      try {
+        await fetch(`${API_URL}/users/${id}`, { method: 'DELETE' });
+        showNotification('Usuario eliminado');
+        loadUsers();
+      } catch (error) {
+        showNotification('Error al eliminar usuario: ' + error.message, 'error');
+      }
+    }
+
+    // EQUIPOS
+    async function createTeam() {
+      const name = document.getElementById('teamName').value;
+      const description = document.getElementById('teamDescription').value;
+      const memberSelect = document.getElementById('teamMembers');
+      const selectedUserIds = Array.from(memberSelect.selectedOptions).map(opt => opt.value);
+      
+      if (!name) return showNotification('El nombre del equipo es requerido', 'error');
+
+      try {
+        const response = await fetch(`${API_URL}/teams`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, description, userIds: selectedUserIds })
+        });
+        
+        if (response.ok) {
+          showNotification('Equipo creado exitosamente');
+          document.getElementById('teamName').value = '';
+          document.getElementById('teamDescription').value = '';
+          memberSelect.selectedIndex = -1;
+          loadTeams();
+        }
+      } catch (error) {
+        showNotification('Error al crear equipo: ' + error.message, 'error');
+      }
+    }
+
+    async function loadUsersForTeamSelect() {
+      try {
+        const response = await fetch(`${API_URL}/users`);
+        const users = await response.json();
+        const select = document.getElementById('teamMembers');
+        
+        if (users.length === 0) {
+          select.innerHTML = '<option value="" disabled>No hay usuarios disponibles</option>';
+          return;
+        }
+        
+        select.innerHTML = users.map(user => 
+          `<option value="${user.id}">${user.name} (${user.email})</option>`
+        ).join('');
+      } catch (error) {
+        console.error('Error al cargar usuarios:', error);
+      }
+    }
+
+    async function loadTeams() {
+      try {
+        const response = await fetch(`${API_URL}/teams`);
+        const teams = await response.json();
+        const container = document.getElementById('teamsList');
+        
+        if (teams.length === 0) {
+          container.innerHTML = '<div class="empty-state"><h3>🏢 No hay equipos</h3><p>Crea el primer equipo de trabajo</p></div>';
+          return;
+        }
+
+        container.innerHTML = teams.map(team => `
+          <div class="card">
+            <h3>${team.name || 'Sin nombre'}</h3>
+            <p><strong>Descripción:</strong> ${team.description || 'Sin descripción'}</p>
+            <p><strong>Miembros:</strong> ${team.members ? team.members.length : 0}</p>
+            <p><strong>ID:</strong> ${team.id}</p>
+            <div style="margin-top: 10px;">
+              ${team.members && team.members.length > 0 ? 
+                '<div style="font-size: 0.9em; color: #666; margin-top: 5px;">' +
+                team.members.map(m => `<span style="background: #e3f2fd; padding: 3px 8px; border-radius: 3px; margin: 2px; display: inline-block;">👤 ${m.name}</span>`).join('') +
+                '</div>' : ''}
+            </div>
+            <div class="card-actions" style="margin-top: 15px;">
+              <button class="btn-secondary" onclick="manageTeamMembers('${team.id}', '${team.name}')">👥 Gestionar Miembros</button>
+              <button class="btn-danger" onclick="deleteTeam('${team.id}')">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showNotification('Error al cargar equipos: ' + error.message, 'error');
+      }
+    }
+
+    async function manageTeamMembers(teamId, teamName) {
+      try {
+        // Cargar usuarios disponibles y miembros actuales
+        const [availableResponse, membersResponse] = await Promise.all([
+          fetch(`${API_URL}/teams/${teamId}/available-users`),
+          fetch(`${API_URL}/teams/${teamId}/members`)
+        ]);
+        
+        const availableUsers = await availableResponse.json();
+        const currentMembers = await membersResponse.json();
+
+        // Crear modal
+        const modal = document.createElement('div');
+        modal.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 1000;';
+        
+        modal.innerHTML = `
+          <div style="background: white; padding: 30px; border-radius: 15px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-top: 0;">👥 Gestionar Miembros - ${teamName}</h2>
+            
+            <h3 style="margin-top: 20px;">Miembros Actuales (${currentMembers.length})</h3>
+            <div id="currentMembersList" style="margin-bottom: 20px;">
+              ${currentMembers.length === 0 ? 
+                '<p style="color: #999;">No hay miembros en este equipo</p>' :
+                currentMembers.map(member => `
+                  <div style="background: #f5f5f5; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <strong>${member.name}</strong><br>
+                      <small style="color: #666;">${member.email} - ${member.role}</small>
+                    </div>
+                    <button onclick="removeMemberFromTeam('${teamId}', '${member.id}')" style="background: #f44336; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">✖ Quitar</button>
+                  </div>
+                `).join('')
+              }
+            </div>
+
+            <h3>Agregar Miembros</h3>
+            <div id="availableUsersList">
+              ${availableUsers.length === 0 ? 
+                '<p style="color: #999;">No hay usuarios disponibles para agregar</p>' :
+                availableUsers.map(user => `
+                  <div style="background: #e3f2fd; padding: 10px; margin: 5px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                      <strong>${user.name}</strong><br>
+                      <small style="color: #666;">${user.email} - ${user.role}</small>
+                    </div>
+                    <button onclick="addMemberToTeam('${teamId}', '${user.id}')" style="background: #4CAF50; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer;">➕ Agregar</button>
+                  </div>
+                `).join('')
+              }
+            </div>
+
+            <div style="margin-top: 20px; text-align: center;">
+              <button onclick="closeModal()" style="background: #9c27b0; color: white; border: none; padding: 10px 30px; border-radius: 8px; cursor: pointer; font-size: 16px;">Cerrar</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        window.currentModal = modal;
+        
+        modal.onclick = (e) => {
+          if (e.target === modal) closeModal();
+        };
+      } catch (error) {
+        showNotification('Error al cargar miembros: ' + error.message, 'error');
+      }
+    }
+
+    async function addMemberToTeam(teamId, userId) {
+      try {
+        const response = await fetch(`${API_URL}/teams/${teamId}/members`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId })
+        });
+
+        if (response.ok) {
+          showNotification('Miembro agregado exitosamente');
+          closeModal();
+          loadTeams();
+        } else {
+          const error = await response.json();
+          showNotification(error.error || 'Error al agregar miembro', 'error');
+        }
+      } catch (error) {
+        showNotification('Error al agregar miembro: ' + error.message, 'error');
+      }
+    }
+
+    async function removeMemberFromTeam(teamId, userId) {
+      if (!confirm('¿Seguro que deseas quitar este miembro del equipo?')) return;
+      
+      try {
+        const response = await fetch(`${API_URL}/teams/${teamId}/members/${userId}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showNotification('Miembro eliminado del equipo');
+          closeModal();
+          loadTeams();
+        }
+      } catch (error) {
+        showNotification('Error al eliminar miembro: ' + error.message, 'error');
+      }
+    }
+
+    function closeModal() {
+      if (window.currentModal) {
+        window.currentModal.remove();
+        window.currentModal = null;
+      }
+    }
+
+    async function deleteTeam(id) {
+      if (!confirm('¿Seguro que deseas eliminar este equipo?')) return;
+      
+      try {
+        await fetch(`${API_URL}/teams/${id}`, { method: 'DELETE' });
+        showNotification('Equipo eliminado');
+        loadTeams();
+      } catch (error) {
+        showNotification('Error al eliminar equipo: ' + error.message, 'error');
+      }
+    }
+
+    // NOTIFICACIONES
+    async function sendNotification() {
+      const message = document.getElementById('notificationMessage').value;
+      const type = document.getElementById('notificationType').value;
+      const teamId = document.getElementById('notificationTeam').value;
+      
+      if (!message) return showNotification('El mensaje es requerido', 'error');
+
+      try {
+        const notifData = { message, type };
+        if (teamId) notifData.teamId = teamId;
+        
+        const response = await fetch(`${API_URL}/notifications`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(notifData)
+        });
+        
+        if (response.ok) {
+          showNotification('Notificación enviada');
+          document.getElementById('notificationMessage').value = '';
+          document.getElementById('notificationTeam').selectedIndex = 0;
+          loadNotifications();
+        }
+      } catch (error) {
+        showNotification('Error al enviar notificación: ' + error.message, 'error');
+      }
+    }
+
+    async function loadNotifications() {
+      try {
+        const response = await fetch(`${API_URL}/notifications`);
+        const notifications = await response.json();
+        const container = document.getElementById('notificationsList');
+        
+        if (notifications.length === 0) {
+          container.innerHTML = '<div class="empty-state"><h3>🔔 No hay notificaciones</h3><p>Envía la primera notificación</p></div>';
+          return;
+        }
+
+        container.innerHTML = notifications.map(notif => `
+          <div class="card">
+            <h3>${notif.message || 'Sin mensaje'}</h3>
+            <p><strong>Tipo:</strong> ${notif.type || 'info'}</p>
+            ${notif.teamName ? `<p><strong>Equipo:</strong> 🏬 ${notif.teamName}</p>` : ''}
+            ${notif.recipients ? `<p><strong>Destinatarios:</strong> ${notif.recipients}</p>` : ''}
+            ${notif.recipientCount ? `<p><strong>Enviado a:</strong> ${notif.recipientCount} miembro(s)</p>` : ''}
+            <p><strong>ID:</strong> ${notif.id}</p>
+            <div class="card-actions">
+              <button class="btn-danger" onclick="deleteNotification('${notif.id}')">🗑️ Eliminar</button>
+            </div>
+          </div>
+        `).join('');
+      } catch (error) {
+        showNotification('Error al cargar notificaciones: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteNotification(id) {
+      if (!confirm('¿Seguro que deseas eliminar esta notificación?')) return;
+      
+      try {
+        await fetch(`${API_URL}/notifications/${id}`, { method: 'DELETE' });
+        showNotification('Notificación eliminada');
+        loadNotifications();
+      } catch (error) {
+        showNotification('Error al eliminar notificación: ' + error.message, 'error');
+      }
+    }
+
+    // Cargar tareas al inicio
+    loadTasks();
+  </script>
+</body>
+</html>

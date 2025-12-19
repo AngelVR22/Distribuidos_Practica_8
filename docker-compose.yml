@@ -1,0 +1,44 @@
+version: '3'
+services:
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "4000:3000"
+    depends_on:
+      - task-service
+      - user-service
+      - notification-service
+      - team-service
+    networks:
+      - microservices-network
+
+  task-service:
+    build: ./task-service
+    networks:
+      - microservices-network
+
+  user-service:
+    build: ./user-service
+    networks:
+      - microservices-network
+
+  notification-service:
+    build: ./notification-service
+    networks:
+      - microservices-network
+
+  team-service:
+    build: ./team-service
+    networks:
+      - microservices-network
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8080:80"
+    networks:
+      - microservices-network
+
+networks:
+  microservices-network:
+    driver: bridge
