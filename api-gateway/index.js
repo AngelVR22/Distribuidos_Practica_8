@@ -40,6 +40,9 @@ app.use('/api/teams', (req, res) => {
     .catch(err => res.status(500).json({ error: err.message }));
 });
 
-app.listen(port, () => {
-  console.log(`API Gateway running on http://localhost:${port}`);
+const PORT = process.env.PORT || port;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`API Gateway running on port ${PORT}`);
 });
+

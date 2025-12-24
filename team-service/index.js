@@ -142,6 +142,9 @@ app.delete('/teams/:id/members/:userId', (req, res) => {
   res.status(200).json(team);
 });
 
-app.listen(port, () => {
-  console.log(`Team service running on http://localhost:${port}`);
+const PORT = process.env.PORT || port;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Team service running on port ${PORT}`);
 });
+

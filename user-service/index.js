@@ -29,6 +29,9 @@ app.delete('/users/:id', (req, res) => {
   res.status(204).send();
 });
 
-app.listen(port, () => {
-  console.log(`User service running on http://localhost:${port}`);
+const PORT = process.env.PORT || port;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`User service running on port ${PORT}`);
 });
+

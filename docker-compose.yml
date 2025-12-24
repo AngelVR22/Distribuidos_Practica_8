@@ -1,7 +1,7 @@
 version: '3'
 services:
   api-gateway:
-    build: ./api-gateway
+    image: angelvr22/api-gateway:1.0
     ports:
       - "4000:3000"
     depends_on:
@@ -13,27 +13,27 @@ services:
       - microservices-network
 
   task-service:
-    build: ./task-service
+    image: angelvr22/task-service:1.0
     networks:
       - microservices-network
 
   user-service:
-    build: ./user-service
+    image: angelvr22/user-service:1.0
     networks:
       - microservices-network
 
   notification-service:
-    build: ./notification-service
+    image: angelvr22/notification-service:1.0
     networks:
       - microservices-network
 
   team-service:
-    build: ./team-service
+    image: angelvr22/team-service:1.0
     networks:
       - microservices-network
 
   frontend:
-    build: ./frontend
+    image: angelvr22/frontend:1.0
     ports:
       - "8080:80"
     networks:

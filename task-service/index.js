@@ -55,6 +55,9 @@ app.delete('/tasks/:id', (req, res) => {
   res.status(204).send();
 });
 
-app.listen(port, () => {
-  console.log(`Task service running on http://localhost:${port}`);
+const PORT = process.env.PORT || port;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Task service running on port ${PORT}`);
 });
+
